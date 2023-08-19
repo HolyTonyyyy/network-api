@@ -1,28 +1,5 @@
-const { ObjectId } = require('mongoose').Types;
-const { User, Thought } = require('../models');
-
-// Aggregate function to get the number of users overall
-const headCount = async () => {
-  const numberOfUsers = await User.aggregate()
-    .count('userCount');
-  return numberOfUsers;
-}
-
-// Aggregate function for getting the overall grade using $avg
-const grade = async (userId) =>
-  User.aggregate([
-    // only include the given user by using $match
-    { $match: { _id: new ObjectId(userId) } },
-    {
-      $unwind: '$assignments',
-    },
-    {
-      $group: {
-        _id: new ObjectId(userId),
-        overallGrade: { $avg: '$assignments.score' },
-      },
-    },
-  ]);
+const { ObjectId } = require("mongoose").Types;
+const { User, Thought } = require("../models");
 
 module.exports = {
   // Get all users
@@ -32,7 +9,6 @@ module.exports = {
 
       const userObj = {
         users,
-        headCount: await headCount(),
       };
 
       res.json(userObj);
@@ -44,16 +20,16 @@ module.exports = {
   // Get a single user
   async getSingleUser(req, res) {
     try {
-      const user = await User.findOne({ _id: req.params.userId })
-        .select('-__v');
+      const user = await User.findOne({ _id: req.params.userId }).select(
+        "-__v"
+      );
 
       if (!user) {
-        return res.status(404).json({ message: 'No user with that ID' })
+        return res.status(404).json({ message: "No user with that ID" });
       }
 
       res.json({
         user,
-        grade: await grade(req.params.userId),
       });
     } catch (err) {
       console.log(err);
@@ -75,7 +51,7 @@ module.exports = {
       const user = await User.findOneAndRemove({ _id: req.params.userId });
 
       if (!user) {
-        return res.status(404).json({ message: 'No such user exists' });
+        return res.status(404).json({ message: "No such user exists" });
       }
 
       const thought = await Thought.findOneAndUpdate(
@@ -86,11 +62,11 @@ module.exports = {
 
       if (!thought) {
         return res.status(404).json({
-          message: 'User deleted, but no thoughts found',
+          message: "User deleted, but no thoughts found",
         });
       }
 
-      res.json({ message: 'User successfully deleted' });
+      res.json({ message: "User successfully deleted" });
     } catch (err) {
       console.log(err);
       res.status(500).json(err);
@@ -99,7 +75,7 @@ module.exports = {
 
   // Add an assignment to a user
   async addAssignment(req, res) {
-    console.log('You are adding an assignment');
+    console.log("You are adding an assignment");
     console.log(req.body);
 
     try {
@@ -112,7 +88,7 @@ module.exports = {
       if (!user) {
         return res
           .status(404)
-          .json({ message: 'No user found with that ID :(' });
+          .json({ message: "No user found with that ID :(" });
       }
 
       res.json(user);
@@ -132,7 +108,7 @@ module.exports = {
       if (!user) {
         return res
           .status(404)
-          .json({ message: 'No user found with that ID :(' });
+          .json({ message: "No user found with that ID :(" });
       }
 
       res.json(user);
